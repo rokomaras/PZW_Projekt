@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Prijava{% endblock %}
+{% block body %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+    <div class="design-card p-4">
+      <h1 class="h4 mb-3">Prijava</h1>
+      <form method="POST">
+        {{ form.hidden_tag() }}
+        {% for field in form if field.type != 'CSRFTokenField' and field.name != 'submit' %}
+          <div class="mb-3">
+            {% if field.type == 'BooleanField' %}
+              <div class="form-check">
+                {{ field(class="form-check-input") }}
+                {{ field.label(class="form-check-label") }}
+              </div>
+            {% else %}
+              {{ field.label(class="form-label") }}
+              {{ field(class="form-control") }}
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in field.errors %}{{ error }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-box-arrow-in-right"></i> {{ form.submit.label.text if form.submit else 'Prijava' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

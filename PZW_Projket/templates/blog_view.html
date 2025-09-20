@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block body %}
+<article class="design-card p-4 p-md-5">
+  <header>
+    <h1 class="post-title">{{ post.title }}</h1>
+    <div class="post-meta">
+      <span class="text-body-secondary"><i class="bi bi-person"></i> {{ post.author }}</span>
+      <span class="text-body-secondary ms-3"><i class="bi bi-calendar"></i> {% if post.date %}{{ post.date.strftime('%d.%m.%Y') }}{% endif %}</span>
+    </div>
+
+    {% if post.tags %}
+    {% if post.tags is string %}
+      {% set tags = post.tags.split(',') %}
+    {% else %}
+      {% set tags = post.tags %}
+    {% endif %}
+    <div class="mt-3 d-flex flex-wrap gap-2">
+      {% for tag in tags %}
+        {% if (tag|string).strip() %}
+        <span class="tag-badge">{{ (tag|string).strip() }}</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </header>
+
+  {% if post.image_id %}
+  <div class="post-image mt-4">
+    <img src="{{ url_for('serve_image', image_id=post.image_id) }}" class="img-fluid rounded-3" alt="Post image">
+  </div>
+  {% endif %}
+
+  <section class="post-content prose mt-4">
+    {{ post.content | markdown | safe }}
+  </section>
+
+  {% if current_user.is_authenticated and (post.author == current_user.get_id() or current_user.is_admin) %}
+  <div class="mt-4 d-flex gap-2">
+    <a href="{{ url_for('post_edit', post_id=post['_id']) }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil-square"></i> Uredi
+    </a>
+    <form method="POST" action="{{ url_for('delete_post', post_id=post['_id']) }}" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovaj post?')">
+      <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Obriši</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <hr class="my-5">
+
+  <section class="comments">
+    <h3 class="mb-3">Komentari</h3>
+
+    {% for comment in comments %}
+    <div class="comment design-card p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-chat-dots"></i> {{ comment.author }}</strong>
+        <small class="text-body-secondary">
+          {% if comment.date %}{{ comment.date.strftime('%d.%m.%Y %H:%M') }}{% endif %}
+        </small>
+      </div>
+      <p class="mb-0 mt-2">{{ comment.content }}</p>
+    </div>
+    {% else %}
+    <div class="alert alert-light subtle-border">Još nema komentara. Budi prvi!</div>
+    {% endfor %}
+
+    {% if current_user.is_authenticated %}
+    <form method="POST" class="mt-4">
+      {{ form.hidden_tag() }}
+      {% for field in form if field.type != 'CSRFTokenField' and field.name != 'submit' %}
+        <div class="mb-3">
+          {{ field.label(class="form-label") }}
+          {% if field.type == 'BooleanField' %}
+            <div class="form-check">
+              {{ field(class="form-check-input") }}
+              {{ field.label(class="form-check-label") }}
+            </div>
+          {% else %}
+            {{ field(class="form-control") }}
+          {% endif %}
+          {% if field.errors %}
+            <div class="text-danger small mt-1">
+              {% for error in field.errors %}{{ error }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i class="bi bi-send"></i> {{ form.submit.label.text if form.submit else 'Pošalji' }}
+      </button>
+    </form>
+    {% else %}
+    <p class="mt-3 text-body-secondary">Prijavite se kako biste ostavili komentar.</p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Uredi post' if editing else 'Novi post' }}{% endblock %}
+{% block body %}
+<div class="row">
+  <div class="col-12 col-lg-10">
+    <div class="design-card p-4">
+      <h1 class="h4 mb-3">{{ 'Uredi post' if editing else 'Novi post' }}</h1>
+      <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        {% for field in form if field.type != 'CSRFTokenField' and field.name != 'submit' %}
+          <div class="mb-3">
+            {{ field.label(class="form-label") }}
+            {% if field.type == 'BooleanField' %}
+              <div class="form-check">
+                {{ field(class="form-check-input") }}
+                {{ field.label(class="form-check-label") }}
+              </div>
+            {% elif field.type == 'FileField' %}
+              {{ field(class="form-control") }}
+            {% elif field.type == 'TextAreaField' %}
+              {{ field(class="form-control", rows="8") }}
+            {% else %}
+              {{ field(class="form-control") }}
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in field.errors %}{{ error }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-save"></i> {{ form.submit.label.text if form.submit else 'Spremi' }}
+          </button>
+          <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm">Odustani</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
